@@ -1,4 +1,4 @@
-#include <SBot_PriVate/SBot_Tools.h>
+#include <SBot_Private/SBot_Tools.h>
 
 #include<random>
 #include<sstream>
