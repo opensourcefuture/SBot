@@ -33,6 +33,8 @@ extern "C"
 
     /* 上传本地图片，得到图片的file_id */
     const char * SBot_MakeImgFileIdByPath(const char * path_str);
+    /* 上传网络图片，得到图片的file_id */
+    const char * SBot_MakeImgFileIdByUrl(const char * url_str);
     /* 提交图片信息 */
     SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id);
 
@@ -53,6 +55,7 @@ extern "C"
 
     const char * SBot_ToAnsi(const char * utf8_str);
     const char * SBot_ToUtf8(const char * ansi_str);
+    /* const char * SBot_Quote(const char * url); */
 
     //用于获取Message的函数
     unsigned int SBot_GetMsgSize();

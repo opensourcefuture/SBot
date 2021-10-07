@@ -24,6 +24,7 @@ thread_local std::string g_get_evt_value_str;
 thread_local std::string g_get_msg_type;
 thread_local std::string g_get_text_msg;
 thread_local std::string g_make_img_id_by_path;
+thread_local std::string g_make_img_id_by_url;
 thread_local std::string g_to_ansi_str;
 thread_local std::string g_to_utf8_str;
 
@@ -322,14 +323,14 @@ extern "C" SBOT_EXPORT_API const char * SBot_MakeImgFileIdByPath(const char * pa
     FILE * fp = fopen(ansi_path_str.c_str(),"rb");
     if(!fp)
     {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: ` " + string(ansi_path_str) + "` can't open");
+        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: `" + string(ansi_path_str) + "` can't open");
          return "";
     }
     fseek(fp,0 ,SEEK_END);  
     long f_size = ftell(fp);
     if(f_size == 0)
     {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: ` " + string(ansi_path_str) + "` can't get size");
+        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: `" + string(ansi_path_str) + "` can't get size");
         fclose(fp);
          return "";
     }
@@ -338,21 +339,43 @@ extern "C" SBOT_EXPORT_API const char * SBot_MakeImgFileIdByPath(const char * pa
     size_t read_size = fread((void * )file_buf.data(),1,f_size,fp);
     if(read_size != f_size)
     {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: ` " + string(ansi_path_str) + "` can't read");
+        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: `" + string(ansi_path_str) + "` can't read");
          fclose(fp);
          return "";
     }
     fclose(fp);
     try
     {
-        g_make_img_id_by_path =  base64_encode(file_buf,false);
+        g_make_img_id_by_path =  string("base64://") + base64_encode(file_buf,false);
     }
     catch(const std::exception&)
     {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: ` " + string(ansi_path_str) + "` can't conver to base64");
+        _SBot_SetErr(SBOT_CLIENT_ERR,"img file: `" + string(ansi_path_str) + "` can't conver to base64");
         return "";
     }
+    _SBot_SetErr(SBOT_OK,"");
     return  g_make_img_id_by_path.c_str();
+}
+
+extern "C" SBOT_EXPORT_API const char * SBot_MakeImgFileIdByUrl(const char * url_str)
+{
+    if(!url_str)
+    {
+        _SBot_SetErr(SBOT_CLIENT_ERR,"url_str is null");
+        return "";
+    }
+    try
+    {
+        g_make_img_id_by_url = url_encode(url_str);
+    }
+    catch(const std::exception&)
+    {
+        _SBot_SetErr(SBOT_CLIENT_ERR,"img uel: `" + string(url_str) + "` can't encode");
+        return "";
+    }
+    
+    _SBot_SetErr(SBOT_OK,"");
+    return g_make_img_id_by_url.c_str();
 }
 
 extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id)
@@ -364,7 +387,7 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id)
     }
     Json::Value send_json;
     send_json["type"] = "image";
-    send_json["data"]["file"] = string("base64://") +  file_id;
+    send_json["data"]["file"] =  file_id;
     g_send_msg.append(send_json);
     _SBot_SetErr(SBOT_OK,"");
     return SBOT_TRUE;
@@ -378,6 +401,7 @@ extern "C" SBOT_EXPORT_API const char * SBot_ToAnsi(const char * utf8_str)
         return SBOT_FALSE;
     }
     g_to_ansi_str = to_ansi(utf8_str);
+    _SBot_SetErr(SBOT_OK,"");
     return g_to_ansi_str.c_str();
 }
 
@@ -389,5 +413,6 @@ extern "C" SBOT_EXPORT_API const char * SBot_ToUtf8(const char * ansi_str)
         return SBOT_FALSE;
     }
     g_to_utf8_str = to_utf8(ansi_str);
+    _SBot_SetErr(SBOT_OK,"");
     return g_to_utf8_str.c_str();
 }

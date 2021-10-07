@@ -62,3 +62,9 @@ std::string to_utf8(const std::string & ansi_str)
         return ansi_str;
     #endif
 }
+
+std::string url_encode(const std::string& url)
+{
+    //TODO...
+    return url;
+}

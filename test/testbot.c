@@ -48,6 +48,13 @@ int main()
 			else if(strcmp(text_msg,"pong") == 0)
 			{
 				printf("recv:pong,send ping\n");
+				const char * file_id =SBot_MakeImgFileIdByUrl("https://1bot.dev/assets/logo-white.png");
+				if(strcmp(file_id,"") == 0)
+				{
+					printf("upload file err:%s\n",SBot_GetErrStr());
+					continue;
+				}
+				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("ping");
 				SBot_SendPrivateMsg();
 			}
