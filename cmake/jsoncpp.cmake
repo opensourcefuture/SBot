@@ -5,7 +5,7 @@ include(cmake/CPM.cmake)
 CPMAddPackage(
     NAME jsoncpp	 
     GIT_TAG master
-    GIT_REPOSITORY https://hub.fastgit.org/open-source-parsers/jsoncpp
+    GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp
     DOWNLOAD_ONLY YES
 )
 

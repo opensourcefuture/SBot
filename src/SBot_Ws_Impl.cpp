@@ -8,7 +8,7 @@
 #include <websocketpp/client.hpp>
 
 #include <map>
-#include <crossguid/guid.hpp>
+#include "SBot_Private/SBot_Tools.h"
 
 using MessagePtr = websocketpp::config::asio_client::message_type::ptr;
 using Client = websocketpp::client<websocketpp::config::asio_client>;
@@ -270,7 +270,7 @@ const char * Ws_SendApi(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr,const
          _SBot_SetErr(SBOT_CLIENT_ERR,"parse json_str error");
         return NULL;
     }
-    string echo = xg::newGuid().str();
+    string echo = gen_echo();
     send_json["echo"] = echo;
     
     try

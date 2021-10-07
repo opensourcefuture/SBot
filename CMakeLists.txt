@@ -25,6 +25,7 @@ add_library(${PROJECT_NAME}
         src/SBot_Ws_Impl.cpp
         src/SBot_Def.cpp
         src/SBot_Help.cpp
+        src/SBot_Tools.cpp
 )
 
 # 指定头文件
@@ -50,7 +51,7 @@ include(cmake/CPM.cmake)
 CPMAddPackage(
     NAME asio	 
     GIT_TAG master
-    GIT_REPOSITORY https://hub.fastgit.org/chriskohlhoff/asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio
     DOWNLOAD_ONLY YES
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${asio_SOURCE_DIR}/asio/include)
@@ -59,7 +60,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${asio_SOURCE_DIR}/asio/inclu
 CPMAddPackage(
     NAME websocketpp	 
     GIT_TAG master
-    GIT_REPOSITORY https://hub.fastgit.org/zaphoyd/websocketpp
+    GIT_REPOSITORY https://github.com/zaphoyd/websocketpp
     DOWNLOAD_ONLY YES
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${websocketpp_SOURCE_DIR})
@@ -72,16 +73,6 @@ endif()
 # 导入jsoncpp依赖
 include(cmake/jsoncpp.cmake)
 target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_static)
-
-# 导入crossguid依赖
-CPMAddPackage(
-    NAME crossguid
-    GIT_TAG master
-    GIT_REPOSITORY https://hub.fastgit.org/graeme-hill/crossguid
-    OPTIONS 
-        "CROSSGUID_TESTS OFF"
-)
-target_link_libraries(${PROJECT_NAME} PRIVATE crossguid)
 
 # install
 include(CMakePackageConfigHelpers)
@@ -109,8 +100,15 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/SBotConfig.cmake"
 )
 
 add_executable(testbot 
-    src/main.c)
+    test/testbot.c)
 target_link_libraries(testbot PRIVATE SBot)
 target_link_libraries(testbot PRIVATE jsoncpp_static)
+
+add_executable(testuuid
+    test/testuuid.cpp
+    src/SBot_Tools.cpp
+)
+target_include_directories(testuuid PRIVATE include)
+
 
 
