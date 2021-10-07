@@ -29,10 +29,12 @@ extern "C"
     const char * SBot_GetEvent();
 
     /* 提交文本信息 */
-    SBOT_BOOL_TYPE SBot_UpTextMsg(const char *text_msg);
+    SBOT_BOOL_TYPE SBot_UpTextMsg(const char * text_msg);
 
+    /* 上传本地图片，得到图片的file_id */
+    const char * SBot_MakeImgFileIdByPath(const char * path_str);
     /* 提交图片信息 */
-    /* SBOT_BOOL_TYPE SBot_UpImageMsg(const char * file_id); */
+    SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id);
 
     /* 发送私聊消息 */
     SBOT_BOOL_TYPE SBot_SendPrivateMsg();
@@ -49,6 +51,8 @@ extern "C"
     SBOT_ERR_CODE SBot_GetErrCode();
     const char * SBot_GetErrStr();
 
+    const char * SBot_ToAnsi(const char * utf8_str);
+    const char * SBot_ToUtf8(const char * ansi_str);
 
     //用于获取Message的函数
     unsigned int SBot_GetMsgSize();

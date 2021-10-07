@@ -35,6 +35,13 @@ int main()
 			if(strcmp(text_msg,"ping") == 0)
 			{
 				printf("recv:ping,send pong\n");
+				const char * file_id =SBot_MakeImgFileIdByPath("D:\\图片.jpg");
+				if(strcmp(file_id,"") == 0)
+				{
+					printf("upload file err:%s\n",SBot_GetErrStr());
+					continue;
+				}
+				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("pong");
 				SBot_SendPrivateMsg();
 			}

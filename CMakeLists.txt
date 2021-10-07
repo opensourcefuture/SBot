@@ -74,6 +74,10 @@ endif()
 include(cmake/jsoncpp.cmake)
 target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_static)
 
+# 导入base64依赖
+include(cmake/base64.cmake)
+target_link_libraries(${PROJECT_NAME} PRIVATE base64)
+
 # install
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -108,6 +112,7 @@ add_executable(testuuid
     test/testuuid.cpp
     src/SBot_Tools.cpp
 )
+target_link_libraries(testuuid PRIVATE base64)
 target_include_directories(testuuid PRIVATE include)
 
 

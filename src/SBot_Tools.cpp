@@ -3,6 +3,12 @@
 #include<random>
 #include<sstream>
 #include<iomanip>
+
+#ifdef _WIN32
+    #include <objbase.h>
+#endif
+
+
 std::string gen_echo()
 {
     static std::random_device rd;
@@ -25,4 +31,34 @@ std::string gen_echo()
      ss << std::setw(4) << (c & 0xFFFFU);
      ss << std::setw(8) << d;
     return ss.str();
+}
+
+std::string to_ansi(const std::string & utf8_str)
+{
+    #ifdef _WIN32
+        int len = MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), utf8_str.size(), NULL, 0);
+        std::wstring unicode_buf(len, L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), utf8_str.size(), unicode_buf.data(), len);
+        len = WideCharToMultiByte(CP_ACP, 0, unicode_buf.data(), unicode_buf.size(), NULL, 0, NULL, NULL);
+        std::string ansi_buf(len, '\0');
+        WideCharToMultiByte(CP_ACP, 0, unicode_buf.data(), unicode_buf.size(), ansi_buf.data(), len, NULL, NULL);
+        return ansi_buf;
+    #else
+        return utf8_str;
+    #endif
+}
+
+std::string to_utf8(const std::string & ansi_str)
+{
+    #ifdef _WIN32
+        int len = MultiByteToWideChar(CP_ACP, 0, ansi_str.c_str(), ansi_str.size(), NULL, 0);
+        std::wstring unicode_buf(len, L'\0');
+        MultiByteToWideChar(CP_ACP, 0, ansi_str.c_str(), ansi_str.size(), unicode_buf.data(), len);
+        len = WideCharToMultiByte(CP_UTF8, 0, unicode_buf.data(), unicode_buf.size(), NULL, 0, NULL, NULL);
+        std::string utf8_buf(len, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, unicode_buf.data(), unicode_buf.size(), utf8_buf.data(), len, NULL, NULL);
+        return utf8_buf;
+    #else
+        return ansi_str;
+    #endif
 }
