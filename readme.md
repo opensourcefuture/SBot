@@ -4,19 +4,20 @@
 
 ## 目的
 
-提供一个对接`OneBot`的跨平台C语言SDK
+* 提供一个对接`OneBot`的跨平台C语言SDK
+* 这是一个以简单为主的框架，可能不会十分高效
 
-## 编译安装
+## 编译 & 安装
 
 ### 编译环境
 
 * `CMake 3.15`及以上
 * 支持`c++17`的`gcc`或`clang`（`windows` 下可以是`mingw`）
-* `git`以及网络支持（某些依赖会自动从`github`拉取）
+* `git`以及网络支持（所有依赖会自动从`github`拉取）
 
-### 编译命令
+### 编译
 
-在`build`目录下：
+在`build`（自己新建，github传不了空文件夹...）目录下：
 
 ```shell
 cmake ..
@@ -35,7 +36,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SBot)
 
 ### 使用示例
 
-一个`ping/pong`插件：私聊收到`ping`，回复`pong`；收到`pong`，回复`ping`。
+一个 ping/pong 插件：私聊收到`ping`，回复`pong`；收到`pong`，回复`ping`。
 
 ```c
 /* file : main.c */
@@ -92,7 +93,7 @@ int main()
 	printf("connect lost\n");
         return 0;
 }
-
+更详细的示例参见 test
 ```
 
 ## 关于内存释放，指针使用的约定
@@ -121,5 +122,4 @@ int main()
 
 ## 当前进度
 
-梳理思路中，例子能跑了，但是可能会大改，随时跑路。
-交流群：920220179
+梳理思路（还没啥想法...）中，例子能跑了，但是可能会大改。国庆即将结束，之后更新可能会较为缓慢，请谅解。
