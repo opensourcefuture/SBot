@@ -47,9 +47,9 @@ int main()
 {
         const char * json_cfg = "\
 	{\
-        \"adapter\":\"ws_onebot11\",\
-        \"ws_url\":\"ws://localhost:6700\",\
-        \"access_token\":\"super1207\"\
+            \"adapter\":\"ws_onebot11\",\
+            \"ws_url\":\"ws://localhost:6700\",\
+            \"access_token\":\"super1207\"\
         }";
 	SBOT_HANDLE_TYPE handle = SBot_Connect(json_cfg);
 	if(handle == SBOT_HANDLE_NULL)
