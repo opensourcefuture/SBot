@@ -37,12 +37,14 @@ extern "C"
     const char * SBot_MakeImgFileIdByUrl(const char * url_str);
     /* 提交图片信息 */
     SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id);
+    /* 提交At信息 */
+    SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id);
 
     /* 发送私聊消息 */
-    SBOT_BOOL_TYPE SBot_SendPrivateMsg();
+    const char * SBot_SendPrivateMsg();
 
     /* 发送群聊消息 */
-    SBOT_BOOL_TYPE SBot_SendGroupMsg();
+    const char * SBot_SendGroupMsg();
 
 
     //线程变量控制函数
@@ -61,6 +63,7 @@ extern "C"
     unsigned int SBot_GetMsgSize();
     const char * SBot_GetMsgType(unsigned int pos);
     const char * SBot_GetTextMsg(unsigned int pos);
+    const char * SBot_GetAtMsg(unsigned int pos);
 
     /* 内部使用的函数 */
     SBOT_HANDLE_TYPE _SBot_GetHandle(const char *cfg_json_str);

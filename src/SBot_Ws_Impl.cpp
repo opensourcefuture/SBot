@@ -80,6 +80,77 @@ static void Del_Con_By_Handle(SBOT_HANDLE_TYPE handle)
     }
 }
 
+// static void Deal_Str_In_SendJson(Json::Value & send_json)
+// {
+//     const char * cvt_str_vec[] = {"user_id","group_id","target_id","self_id","message_id"};
+//     for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
+//     {
+//         if(send_json["params"][cvt_str_vec[i]].isString())
+//         {
+//             assert(sizeof(long long int) == 8);
+//             send_json["params"][cvt_str_vec[i]] = \
+//                 stoll(send_json["params"][cvt_str_vec[i]].asString());
+//         }
+//     }
+// }
+
+// static void Deal_Str_In_RecvJson(Json::Value & send_json)
+// {
+//     const char * cvt_str_vec[] = {"user_id","group_id","target_id","self_id","message_id"};
+//     for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
+//     {
+//         if(send_json[cvt_str_vec[i]].isInt64())
+//         {
+//             send_json[cvt_str_vec[i]] = \
+//                 to_string(send_json[cvt_str_vec[i]].asInt64());
+//         }
+//     }
+//     if(send_json["data"].isObject())
+//     {
+//         for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
+//         {
+//             if(send_json["data"][cvt_str_vec[i]].isString())
+//             {
+//                 assert(sizeof(long long int) == 8);
+//                 send_json["data"][cvt_str_vec[i]] = \
+//                     stoll(send_json["data"][cvt_str_vec[i]].asString());
+//             }
+//         }
+//     }
+// }
+
+static void Cvt_Json_Int_To_Str(Json::Value & send_json)
+{
+    if(send_json.isObject())
+    {
+        Json::Value::Members member = send_json.getMemberNames();
+        for (std::vector<std::string>::iterator iter = member.begin(); iter != member.end(); iter++)
+		{
+            if(send_json[(*iter)].isInt64())
+            {
+                send_json[(*iter)] = to_string(send_json[(*iter)].asInt64());
+            }
+            else
+            {
+                Cvt_Json_Int_To_Str(send_json[(*iter)]);
+            }
+        }
+    }else if(send_json.isArray())
+    {
+        for(auto & it:send_json)
+        {
+            if(it.isInt64())
+            {
+                it = to_string(it.asInt64());
+            }
+            else
+            {
+                Cvt_Json_Int_To_Str(it);
+            }
+        }
+    }
+}
+
 static SBOT_BOOL_TYPE _Ws_Connect(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr)
 {
     auto con_def = make_shared<Con_Def>();
@@ -130,6 +201,15 @@ static SBOT_BOOL_TYPE _Ws_Connect(std::shared_ptr<SBot_Struct> bot_handle_shared
             //do nothing
             return ;
         }
+        try
+        {
+            Cvt_Json_Int_To_Str(recv_json);
+        }
+        catch(const std::exception &)
+        {
+            //do nothing
+            return ;
+        }
         if(recv_json.isObject() && recv_json["post_type"].isString())
         {
             auto con_def_ptr = Get_Con_Def_By_Handle(handle).lock();
@@ -151,7 +231,7 @@ static SBOT_BOOL_TYPE _Ws_Connect(std::shared_ptr<SBot_Struct> bot_handle_shared
             lock_guard<mutex> lk(sg_mx_echo_map);
             if(sg_echo_map.find(echo) != sg_echo_map.end())
             {
-                sg_echo_map[echo] = event_str;
+                sg_echo_map[echo] = Json::FastWriter().write(recv_json);
             }
         }
         
@@ -256,6 +336,8 @@ void Ws_DisConnect(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr)
     }
 }
 
+
+
 const char * Ws_SendApi(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr,const char * self_id,const char * json_str)
 {
     if(!self_id || !json_str)
@@ -272,6 +354,17 @@ const char * Ws_SendApi(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr,const
     }
     string echo = gen_echo();
     send_json["echo"] = echo;
+
+    try
+    {
+        Cvt_Json_Int_To_Str(send_json);
+    }
+    catch(const std::exception & e)
+    {
+        _SBot_SetErr(SBOT_CLIENT_ERR,string("send json is wrong:") + e.what());
+        return NULL;
+    }
+    
     
     try
     {

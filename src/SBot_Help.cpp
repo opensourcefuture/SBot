@@ -23,10 +23,12 @@ thread_local Json::Value g_send_msg;
 thread_local std::string g_get_evt_value_str;
 thread_local std::string g_get_msg_type;
 thread_local std::string g_get_text_msg;
+thread_local std::string g_get_at_msg;
 thread_local std::string g_make_img_id_by_path;
 thread_local std::string g_make_img_id_by_url;
 thread_local std::string g_to_ansi_str;
 thread_local std::string g_to_utf8_str;
+thread_local std::string g_send_group_msg;
 
 using namespace std;
 
@@ -80,7 +82,22 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpTextMsg(const char * text_msg)
     return SBOT_TRUE;
 }
 
-extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_SendPrivateMsg()
+extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id)
+{
+    if(!target_id)
+    {
+        _SBot_SetErr(SBOT_CLIENT_ERR,"target_id is null");
+        return SBOT_FALSE;
+    }
+    Json::Value send_json;
+    send_json["type"] = "at";
+    send_json["data"]["qq"] = target_id;
+    g_send_msg.append(send_json);
+    _SBot_SetErr(SBOT_OK,"");
+    return SBOT_TRUE;
+}
+
+extern "C" SBOT_EXPORT_API const char * SBot_SendPrivateMsg()
 {
     Json::Value send_json;
     send_json["action"] = "send_private_msg";
@@ -88,72 +105,71 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_SendPrivateMsg()
     send_json["params"]["message"] = g_send_msg;
     g_send_msg = Json::Value();
     string self_id;
-    if(g_event_json["self_id"].isInt64())
-    {
-        self_id = to_string(g_event_json["self_id"].asInt64());
-    }
-    else if(g_event_json["self_id"].isString())
+    if(g_event_json["self_id"].isString())
     {
         self_id = g_event_json["self_id"].asString();
     }
     else
     {
         _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
-        return SBOT_FALSE;
+        return "";
     }
     
     const char * ret_str =  \
         _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
     if(!ret_str)
     {
-        return SBOT_FALSE;
+        return "";
     }
     Json::Reader reader;
     Json::Value ret_json;
 	if(!reader.parse(ret_str, ret_json))
     {
         _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
-        return SBOT_FALSE;
+        return "";
     }
     if( !ret_json.isObject() || 
-        !ret_json["retcode"].isInt() || 
-        (ret_json["retcode"].asInt() != 0)
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
     )
     {
         _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
-        return SBOT_FALSE;
+        return "";
     }
-    return SBOT_TRUE;
+    try
+    {
+        g_send_group_msg = ret_json["data"]["message_id"].asString();
+        return g_send_group_msg.c_str();
+    }
+    catch(const std::exception &)
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"can not get message_id from :\n" + ret_json.toStyledString());
+        return "";
+    }
 }
 
-extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_SendGroupMsg()
+extern "C" SBOT_EXPORT_API const char * SBot_SendGroupMsg()
 {
     Json::Value send_json;
     send_json["action"] = "send_group_msg";
-    send_json["params"]["user_id"] = g_event_json["user_id"];
     send_json["params"]["group_id"] = g_event_json["group_id"];
     send_json["params"]["message"] = g_send_msg;
     g_send_msg = Json::Value();
     string self_id;
-    if(g_event_json["self_id"].isInt64())
-    {
-        self_id = to_string(g_event_json["self_id"].asInt64());
-    }
-    else if(g_event_json["self_id"].isString())
+    if(g_event_json["self_id"].isString())
     {
         self_id = g_event_json["self_id"].asString();
     }
     else
     {
         _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
-        return SBOT_FALSE;
+        return "";
     }
-    
     const char * ret_str =  \
         _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
     if(!ret_str)
     {
-        return SBOT_FALSE;
+        return "";
     }
     Json::Reader reader;
     Json::Value ret_json;
@@ -163,14 +179,23 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_SendGroupMsg()
         return SBOT_FALSE;
     }
     if( !ret_json.isObject() || 
-        !ret_json["retcode"].isInt() || 
-        (ret_json["retcode"].asInt() != 0)
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
     )
     {
         _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
-        return SBOT_FALSE;
+        return "";
     }
-    return SBOT_TRUE;
+    try
+    {
+        g_send_group_msg = ret_json["data"]["message_id"].asString();
+        return g_send_group_msg.c_str();
+    }
+    catch(const std::exception &)
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"can not get message_id from :\n" + ret_json.toStyledString());
+        return "";
+    }
 }
 
 
@@ -190,10 +215,6 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetEvtValue(const char * key)
     if(ret_json.isString())
     {
         g_get_evt_value_str = ret_json.asString();
-    }
-    else if(ret_json.isInt64())
-    {
-        g_get_evt_value_str = to_string(ret_json.asInt64());
     }
     else
     {
@@ -277,6 +298,10 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetMsgType(unsigned int pos)
         {
             return g_get_msg_type.c_str();
         }
+        else if(g_get_msg_type == "at")
+        {
+            return g_get_msg_type.c_str();
+        }
         return "unknow";
     }
     catch(const std::exception & e)
@@ -293,6 +318,21 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetTextMsg(unsigned int pos)
     {
         g_get_text_msg = g_event_json["message"][pos]["data"]["text"].asString();
        return g_get_text_msg.c_str();
+    }
+    catch(const std::exception & e)
+    {
+        _SBot_SetErr(SBOT_UNKNOW_ERR,e.what());
+         return "";
+    }
+    _SBot_SetErr(SBOT_OK,"");
+}
+
+extern "C" SBOT_EXPORT_API const char * SBot_GetAtMsg(unsigned int pos)
+{
+    try
+    {
+        g_get_at_msg = g_event_json["message"][pos]["data"]["qq"].asString();
+       return g_get_at_msg.c_str();
     }
     catch(const std::exception & e)
     {
@@ -370,7 +410,7 @@ extern "C" SBOT_EXPORT_API const char * SBot_MakeImgFileIdByUrl(const char * url
     }
     catch(const std::exception&)
     {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"img uel: `" + string(url_str) + "` can't encode");
+        _SBot_SetErr(SBOT_CLIENT_ERR,"img url: `" + string(url_str) + "` can't encode");
         return "";
     }
     

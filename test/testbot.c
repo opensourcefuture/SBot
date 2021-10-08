@@ -27,7 +27,7 @@ int main()
 		{
 			continue;
 		}
-		if( strcmp(SBot_GetEvtValue("message_type"),"private") == 0 &&
+		if( strcmp(SBot_GetEvtValue("message_type"),"group") == 0 &&
 			SBot_GetMsgSize() == 1 &&
 			strcmp(SBot_GetMsgType(0),"text") == 0)
 		{
@@ -35,15 +35,19 @@ int main()
 			if(strcmp(text_msg,"ping") == 0)
 			{
 				printf("recv:ping,send pong\n");
-				const char * file_id =SBot_MakeImgFileIdByPath("D:\\图片.jpg");
+				const char * file_id =SBot_MakeImgFileIdByPath("D:\\1图片.jpg");
 				if(strcmp(file_id,"") == 0)
 				{
 					printf("upload file err:%s\n",SBot_GetErrStr());
 					continue;
 				}
+				SBot_UpAtMsg(SBot_GetEvtValue("user_id"));
 				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("pong");
-				SBot_SendPrivateMsg();
+				if(strcmp(SBot_SendGroupMsg(),"") == 0)
+				{
+					printf("SBot_SendGroupMsg err:%s\n",SBot_GetErrStr());
+				}
 			}
 			else if(strcmp(text_msg,"pong") == 0)
 			{
@@ -54,9 +58,10 @@ int main()
 					printf("upload file err:%s\n",SBot_GetErrStr());
 					continue;
 				}
+				SBot_UpAtMsg(SBot_GetEvtValue("user_id"));
 				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("ping");
-				SBot_SendPrivateMsg();
+				SBot_SendGroupMsg();
 			}
 
 		}
