@@ -27,6 +27,13 @@ int main()
 		{
 			continue;
 		}
+		if(strcmp(SBot_GetEvtValue("message_type"),"group") == 0)
+		{
+			if(strcmp(SBot_GetMsgType(0),"at") == 0)
+			{
+				printf("at:%s\n",SBot_GetAtMsg(0));
+			}
+		}
 		if( strcmp(SBot_GetEvtValue("message_type"),"group") == 0 &&
 			SBot_GetMsgSize() == 1 &&
 			strcmp(SBot_GetMsgType(0),"text") == 0)

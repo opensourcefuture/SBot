@@ -3,6 +3,7 @@
 #include<random>
 #include<sstream>
 #include<iomanip>
+#include<regex>
 
 #ifdef _WIN32
     #include <objbase.h>
@@ -67,4 +68,25 @@ std::string url_encode(const std::string& url)
 {
     //TODO...
     return url;
+}
+
+std::vector<std::vector<std::string>> match_all(const std::string& content, const std::string& pattern)
+{
+    using namespace std;
+    std::vector<std::vector<std::string>> ret_vec;
+    regex r(pattern);
+    smatch sm;
+    string::const_iterator search_start(content.cbegin());
+    std::vector<std::string> dat_vec;
+    while(regex_search(search_start, content.cend(), sm, r))
+	{
+        vector<string> temp_vec;
+        for(size_t i = 0;i < sm.size();++i)
+        {
+            temp_vec.push_back(sm[i].str());
+        }
+		ret_vec.push_back(temp_vec);
+		search_start = sm.suffix().first;
+	}
+    return ret_vec;
 }

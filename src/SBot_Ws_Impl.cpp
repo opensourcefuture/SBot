@@ -151,6 +151,68 @@ static void Cvt_Json_Int_To_Str(Json::Value & send_json)
     }
 }
 
+static void Replace_All_Distinct(std::string& str, const std::string& old_value, const std::string& new_value) 
+{
+	for (std::string::size_type pos(0); pos != std::string::npos; pos += new_value.length())
+	{
+		if ((pos = str.find(old_value, pos)) != std::string::npos)
+		{
+			str.replace(pos, old_value.length(), new_value);
+		}
+		else 
+		{ 
+			break;
+		}
+	}
+}
+
+static Json::Value CQ_Str_To_JsonArr(const std::string& cq_str) 
+{
+	using namespace std;
+	std::vector<std::string> dat_vec;
+	auto all_vec = match_all(cq_str, "(\\[CQ:[^\\[\\],]+?(,[^\\[\\],]+?=[^\\[\\],]*?)*?\\])|([^\\[\\],]+)");
+	for (auto& i : all_vec)
+	{
+		dat_vec.push_back(i.at(0));
+	}
+	Json::Value jsonarr = Json::arrayValue;
+	for (auto& dat : dat_vec)
+	{
+		if (dat[0] == '[')
+		{
+			/* 说明是CQ码 */
+			size_t pos1 = dat.find_first_of(",");
+			Json::Value node;
+			node["type"] = dat.substr(4, pos1 - 4);
+			Json::Value dat_node = Json::objectValue;
+			
+			auto all_vec = match_all(dat, "[:,]([^\\[\\],]+?)=([^\\[\\],]*?)(?=[\\],])");
+			for (auto& i : all_vec)
+			{
+				dat_node[i.at(1)] = i.at(2);
+			}
+			node["data"] = dat_node;
+			jsonarr.append(node);
+		}
+		else
+		{
+			/* 说明是text */
+			Json::Value node;
+			node["type"] = "text";
+			Json::Value dat_node;
+			Replace_All_Distinct(dat, "&amp;", "&");
+			Replace_All_Distinct(dat, "&#91;", "[");
+			Replace_All_Distinct(dat, "&#93;", "]");
+			Replace_All_Distinct(dat, "&#44;", ",");
+			dat_node["text"] = dat;
+			node["data"] = dat_node;
+			jsonarr.append(node);
+		}
+	}
+	//std::string s = jsonarr.toStyledString();
+	return jsonarr;
+}
+
 static SBOT_BOOL_TYPE _Ws_Connect(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr)
 {
     auto con_def = make_shared<Con_Def>();
@@ -203,6 +265,10 @@ static SBOT_BOOL_TYPE _Ws_Connect(std::shared_ptr<SBot_Struct> bot_handle_shared
         }
         try
         {
+            if(recv_json["message"].isString())
+            {
+                 recv_json["message"] = CQ_Str_To_JsonArr(recv_json["message"].asString());
+            }
             Cvt_Json_Int_To_Str(recv_json);
         }
         catch(const std::exception &)
