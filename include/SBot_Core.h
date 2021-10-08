@@ -37,7 +37,7 @@ extern "C"
         struct SBOT_GROUPINFOLIST_TYPE * next;
     }__attribute__((aligned(1))) SBOT_GROUPINFOLIST_TYPE;
 
-    SBOT_BOOL_TYPE SBot_Connect(const char *cfg_json_str);
+    SBOT_HANDLE_TYPE SBot_Connect(const char *cfg_json_str);
     void SBot_DelHandle(SBOT_HANDLE_TYPE handle);
     SBOT_BOOL_TYPE SBot_IsConnect();
 
@@ -62,7 +62,7 @@ extern "C"
     const char * SBot_GetEvtValue(const char *key);
     SBOT_BOOL_TYPE SBot_SetEvtValue(const char *key, const char *value);
     SBOT_BOOL_TYPE SBot_SetHandle(SBOT_HANDLE_TYPE handle);
-    SBOT_HANDLE_TYPE SBot_GetHandle(SBOT_HANDLE_TYPE handle);
+    SBOT_HANDLE_TYPE SBot_GetHandle();
     SBOT_ERR_CODE SBot_GetErrCode();
     const char * SBot_GetErrStr();
 

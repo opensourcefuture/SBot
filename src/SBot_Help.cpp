@@ -293,7 +293,7 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_SetHandle(SBOT_HANDLE_TYPE handle
 	return SBOT_TRUE;
 }
 
-extern "C" SBOT_EXPORT_API SBOT_HANDLE_TYPE SBot_GetHandle(SBOT_HANDLE_TYPE handle)
+extern "C" SBOT_EXPORT_API SBOT_HANDLE_TYPE SBot_GetHandle()
 {
     _SBot_SetErr(SBOT_OK,"");
 	return g_handle;

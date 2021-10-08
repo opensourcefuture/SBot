@@ -120,6 +120,248 @@ int main()
 
 错误码和错误字符串仅在函数执行失败或无法明确判断函数执行结果时有效，对于这两种情况，会在函数说明文档（还没写）中具体说明。
 
+## 函数说明
+
+### 连接 OneBot 实现：SBot_Connect
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_HANDLE_TYPE SBot_Connect(const char *cfg_json_str)
+
+#### 函数功能：
+	用于连接 OneBot 实现。
+
+#### 参数：
+	cfg_json_str：
+		连接 OneBot所需的参数，必须为 json 格式的字符串，字符串的具体内容见示例。
+
+#### 返回值：
+	若成功，返回连接句柄，若失败，返回 SBOT_HANDLE_NULL。
+
+#### 线程变量设置：
+	handle
+	
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	建议 cfg_json_str 从配置文件读取。
+	
+```
+</details>
+
+### 释放连接句柄：SBot_DelHandle
+
+<details>
+
+```markdown
+#### 函数原型：
+	void SBot_DelHandle(SBOT_HANDLE_TYPE handle)
+
+#### 函数功能：
+	用于释放连接句柄。
+
+#### 参数：
+	handle
+		连接句柄。
+
+#### 返回值：
+	无，且一定成功。
+
+#### 线程变量设置：
+	handle
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	必须调用这个函数来释放。
+	
+```
+</details>
+
+### 判断是否连接成功：SBot_IsConnect
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_IsConnect()
+
+#### 函数功能：
+	用于释放连接句柄。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功连接返回 SBOT_TRUE，没有连接返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle
+
+#### 其它说明：
+	无。
+	
+```
+</details>
+
+### 获取事件：SBot_GetEvent
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetEvent()
+
+#### 函数功能：
+	获取事件。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	失败返回 ""，成功返回非 ""。
+
+#### 线程变量设置：
+	user_id、target_id、group_id、nickname、self_id、time、post_type、<post_type>_type、message_id、sub_type、message。
+
+#### 线程变量依赖：
+	handle
+
+#### 其它说明：
+	无
+	
+```
+</details>
+
+### 获取线程变量：SBot_GetEvtValue
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetEvtValue(const char *key)
+
+#### 函数功能：
+	获取 SBot_GetEvent 函数设置的部分线程变量：user_id、target_id、group_id、nickname、self_id、post_type、<post_type>_type、message_id、sub_type。
+
+#### 参数：
+	key：
+		要获取的线程变量的名字。
+
+#### 返回值：
+	返回线程变量的值，恒为字符串。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	可以被此函数获取的线程变量。
+
+#### 其它说明：
+	此函数需要通过错误码来判断是否执行成功。
+	
+```
+</details>
+
+### 设置线程变量：SBot_SetEvtValue
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_SetEvtValue(const char *key, const char *value)
+
+#### 函数功能：
+	重新设置 SBot_GetEvent 函数设置的部分线程变量：user_id、target_id、group_id、nickname、self_id、post_type、<post_type>_type、message_id、sub_type。
+
+#### 参数：
+	key：
+		要设置的线程变量的名字。
+	value:
+		要设置的值。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	这个函数可设置的线程变量
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	无
+	
+```
+</details>
+
+### 设置线程变量handle：SBot_SetHandle
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_SetHandle(SBOT_HANDLE_TYPE handle)
+
+#### 函数功能：
+	设置线程变量 handle
+
+#### 参数：
+	handle：
+		线程变量 handle
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	handle
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	无
+	
+```
+</details>
+
+### 获取线程变量handle：SBot_GetHandle
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_SetHandle()
+
+#### 函数功能：
+	获取线程变量 handle
+
+#### 参数：
+	handle：
+		线程变量 handle
+
+#### 返回值：
+	返回 handle
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle
+
+#### 其它说明：
+	此函数需要通过错误码来判断是否执行成功。
+	
+```
+</details>
+
 ## 当前进度
 
 梳理思路（还没啥想法...）中，例子能跑了，但是可能会大改。国庆即将结束，之后更新可能会较为缓慢，请谅解。
