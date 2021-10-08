@@ -16,35 +16,46 @@ extern "C"
 #define SBOT_SERVER_ERR 2
 #define SBOT_UNKNOW_ERR 3
 
-    /* 连接Bot */
+
+    typedef struct SBOT_LOGININFO_TYPE
+    {
+        const char * user_id;
+        const char * nickname;
+    }__attribute__((aligned(1))) SBOT_LOGININFO_TYPE;
+
+    typedef struct SBOT_FRIENDINFOLIST_TYPE
+    {
+        const char * user_id;
+        const char * nickname;
+        struct SBOT_FRIENDINFOLIST_TYPE * next;
+    }__attribute__((aligned(1))) SBOT_FRIENDINFOLIST_TYPE;
+
+    typedef struct SBOT_GROUPINFOLIST_TYPE
+    {
+        const char * group_id;
+        const char * group_name;
+        struct SBOT_GROUPINFOLIST_TYPE * next;
+    }__attribute__((aligned(1))) SBOT_GROUPINFOLIST_TYPE;
+
     SBOT_BOOL_TYPE SBot_Connect(const char *cfg_json_str);
-
-    /* 释放Bot */
     void SBot_DelHandle(SBOT_HANDLE_TYPE handle);
-
-    /* 判断Bot是否连接 */
     SBOT_BOOL_TYPE SBot_IsConnect();
 
-    /* 获取事件 */
     const char * SBot_GetEvent();
-
-    /* 提交文本信息 */
     SBOT_BOOL_TYPE SBot_UpTextMsg(const char * text_msg);
-
-    /* 上传本地图片，得到图片的file_id */
     const char * SBot_MakeImgFileIdByPath(const char * path_str);
-    /* 上传网络图片，得到图片的file_id */
     const char * SBot_MakeImgFileIdByUrl(const char * url_str);
-    /* 提交图片信息 */
     SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id);
-    /* 提交At信息 */
     SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id);
-
-    /* 发送私聊消息 */
     const char * SBot_SendPrivateMsg();
-
-    /* 发送群聊消息 */
     const char * SBot_SendGroupMsg();
+
+    SBOT_LOGININFO_TYPE * SBot_GetLoginInfo();
+    SBOT_FRIENDINFOLIST_TYPE * SBot_GetFriendList();
+    SBOT_GROUPINFOLIST_TYPE * SBot_GetGroupList();
+
+
+    SBOT_BOOL_TYPE SBot_DelMsg();
 
 
     //线程变量控制函数

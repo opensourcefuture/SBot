@@ -18,8 +18,8 @@ using namespace std;
 #endif
 
 thread_local SBOT_HANDLE_TYPE g_handle;
-thread_local Json::Value g_event_json;
-thread_local Json::Value g_send_msg;
+thread_local Json::Value g_event_json = Json::objectValue;
+thread_local Json::Value g_send_msg = Json::arrayValue;
 thread_local std::string g_get_evt_value_str;
 thread_local std::string g_get_msg_type;
 thread_local std::string g_get_text_msg;
@@ -29,6 +29,29 @@ thread_local std::string g_make_img_id_by_url;
 thread_local std::string g_to_ansi_str;
 thread_local std::string g_to_utf8_str;
 thread_local std::string g_send_group_msg;
+
+//GetLoginInfo
+thread_local SBOT_LOGININFO_TYPE g_login_info;
+thread_local std::string g_login_info_user_id;
+thread_local std::string g_login_info_nickname;
+
+//GetFriendList
+struct FriendInfo_t
+{
+    std::string user_id;
+    std::string nickname;
+};
+thread_local std::vector<SBOT_FRIENDINFOLIST_TYPE> g_friendInfo;
+thread_local std::vector<FriendInfo_t> g_friendInfo_t;
+
+//GetGroupList
+struct GroupInfo_t
+{
+    std::string group_id;
+    std::string group_name;
+};
+thread_local std::vector<SBOT_GROUPINFOLIST_TYPE> g_groupInfo;
+thread_local std::vector<GroupInfo_t> g_groupInfo_t;
 
 using namespace std;
 
@@ -55,7 +78,7 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_IsConnect()
 
 extern "C" SBOT_EXPORT_API const char * SBot_GetEvent()
 {
-    g_event_json = Json::nullValue;
+    g_event_json = Json::objectValue;
 	const char * evt_str = _SBot_GetEvent(g_handle);
     if(evt_str == NULL)
     {
@@ -64,6 +87,10 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetEvent()
     }
     Json::Reader reader;
 	reader.parse(evt_str, g_event_json); //must success
+    if(!g_event_json.isObject())
+    {
+        g_event_json = Json::objectValue;
+    }
     return evt_str;
 }
 
@@ -103,7 +130,7 @@ extern "C" SBOT_EXPORT_API const char * SBot_SendPrivateMsg()
     send_json["action"] = "send_private_msg";
     send_json["params"]["user_id"] = g_event_json["user_id"];
     send_json["params"]["message"] = g_send_msg;
-    g_send_msg = Json::Value();
+    g_send_msg = Json::arrayValue;
     string self_id;
     if(g_event_json["self_id"].isString())
     {
@@ -154,7 +181,7 @@ extern "C" SBOT_EXPORT_API const char * SBot_SendGroupMsg()
     send_json["action"] = "send_group_msg";
     send_json["params"]["group_id"] = g_event_json["group_id"];
     send_json["params"]["message"] = g_send_msg;
-    g_send_msg = Json::Value();
+    g_send_msg = Json::arrayValue;
     string self_id;
     if(g_event_json["self_id"].isString())
     {
@@ -206,21 +233,30 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetEvtValue(const char * key)
         _SBot_SetErr(SBOT_CLIENT_ERR,"key is null");
         return "";
     }
-    if(!g_event_json.isObject())
-    {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"SBot_GetEvent not call before");
-        return "";
-    }
     auto ret_json = g_event_json[key];
     if(ret_json.isString())
     {
         g_get_evt_value_str = ret_json.asString();
+    }
+    else if(g_event_json["sender"].isObject())
+    {
+        ret_json = g_event_json["sender"][key];
+        if(ret_json.isString())
+        {
+            g_get_evt_value_str = ret_json.asString();
+        }
+        else
+        {
+            _SBot_SetErr(SBOT_CLIENT_ERR,"the key ` " + string(key) + "` not exist");
+            return "";
+        }
     }
     else
     {
         _SBot_SetErr(SBOT_CLIENT_ERR,"the key ` " + string(key) + "` not exist");
         return "";
     }
+
     _SBot_SetErr(SBOT_OK,"");
     return g_get_evt_value_str.c_str();
 }
@@ -231,10 +267,6 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_SetEvtValue(const char * key,cons
     {
         _SBot_SetErr(SBOT_CLIENT_ERR,"key is null");
         return SBOT_FALSE;
-    }
-    if(!g_event_json.isObject())
-    {
-        g_event_json = Json::objectValue;
     }
     if(!value)
     {
@@ -269,11 +301,6 @@ extern "C" SBOT_EXPORT_API SBOT_HANDLE_TYPE SBot_GetHandle(SBOT_HANDLE_TYPE hand
 
 extern "C" SBOT_EXPORT_API unsigned int SBot_GetMsgSize()
 {
-    if(!g_event_json.isObject())
-    {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"SBot_GetEvent not call before");
-        return  0;
-    }
 	Json::Value msg_vec = g_event_json["message"];
     if(msg_vec.isNull())
     {
@@ -455,4 +482,255 @@ extern "C" SBOT_EXPORT_API const char * SBot_ToUtf8(const char * ansi_str)
     g_to_utf8_str = to_utf8(ansi_str);
     _SBot_SetErr(SBOT_OK,"");
     return g_to_utf8_str.c_str();
+}
+extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_DelMsg()
+{
+    Json::Value send_json;
+    send_json["action"] = "delete_msg";
+    send_json["params"]["message_id"] = g_event_json["message_id"];
+    g_send_msg = Json::arrayValue;
+    string self_id;
+    if(g_event_json["self_id"].isString())
+    {
+        self_id = g_event_json["self_id"].asString();
+    }
+    else
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
+        return SBOT_FALSE;
+    }
+    
+    const char * ret_str =  \
+        _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
+    if(!ret_str)
+    {
+        return SBOT_FALSE;
+    }
+    Json::Reader reader;
+    Json::Value ret_json;
+	if(!reader.parse(ret_str, ret_json))
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
+        return SBOT_FALSE;
+    }
+    if( !ret_json.isObject() || 
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
+    )
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
+        return SBOT_FALSE;
+    }
+    return SBOT_TRUE;
+}
+
+extern "C" SBOT_EXPORT_API SBOT_LOGININFO_TYPE * SBot_GetLoginInfo()
+{
+    Json::Value send_json;
+    send_json["action"] = "get_login_info";
+    g_send_msg = Json::arrayValue;
+    string self_id;
+    if(g_event_json["self_id"].isString())
+    {
+        self_id = g_event_json["self_id"].asString();
+    }
+    else
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
+        return NULL;
+    }
+    
+    const char * ret_str =  \
+        _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
+    if(!ret_str)
+    {
+        return NULL;
+    }
+    Json::Reader reader;
+    Json::Value ret_json;
+	if(!reader.parse(ret_str, ret_json))
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
+        return NULL;
+    }
+    if( !ret_json.isObject() || 
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
+    )
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
+        return NULL;
+    }
+
+    try
+    {
+        g_login_info_user_id = ret_json["data"]["user_id"].asString();
+        g_login_info_nickname = ret_json["data"]["nickname"].asString();
+        g_login_info.user_id = g_login_info_user_id.c_str();
+        g_login_info.nickname = g_login_info_nickname.c_str();
+    }
+    catch(const std::exception& e)
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,string("api recv err:") + e.what());
+        return NULL;
+    }
+    return &g_login_info;
+}
+
+extern "C" SBOT_EXPORT_API SBOT_FRIENDINFOLIST_TYPE * SBot_GetFriendList()
+{
+    Json::Value send_json;
+    send_json["action"] = "get_friend_list";
+    g_send_msg = Json::arrayValue;
+    string self_id;
+    if(g_event_json["self_id"].isString())
+    {
+        self_id = g_event_json["self_id"].asString();
+    }
+    else
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
+        return NULL;
+    }
+    
+    const char * ret_str =  \
+        _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
+    if(!ret_str)
+    {
+        return NULL;
+    }
+    Json::Reader reader;
+    Json::Value ret_json;
+	if(!reader.parse(ret_str, ret_json))
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
+        return NULL;
+    }
+    if( !ret_json.isObject() || 
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
+    )
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
+        return NULL;
+    }
+    //printf("recv:%s\n",ret_json.toStyledString().c_str());
+    try
+    {
+        Json::Value & json_vec = ret_json["data"];
+        g_friendInfo_t.clear();
+        g_friendInfo.clear();
+        for(const auto & it:json_vec)
+        {
+            FriendInfo_t info;
+            info.user_id = it["user_id"].asString();
+            info.nickname = it["nickname"].asString();
+            g_friendInfo_t.push_back(info);
+        }
+        if(g_friendInfo_t.size() == 0)
+        {
+            //you are no friend
+            return NULL;
+        }
+        for(size_t i = 0; i < g_friendInfo_t.size();++i)
+        {
+            SBOT_FRIENDINFOLIST_TYPE sbot_friend_info;
+            sbot_friend_info.user_id =  g_friendInfo_t[i].user_id.c_str();
+            sbot_friend_info.nickname =  g_friendInfo_t[i].nickname.c_str();
+            sbot_friend_info.next = NULL;
+            g_friendInfo.push_back(sbot_friend_info);
+        }
+        for(size_t i = 0; i < g_friendInfo.size();++i)
+        {
+            if(i != g_friendInfo.size() - 1)
+            {
+                g_friendInfo[i].next = &g_friendInfo[i+1];
+            }
+        }
+    }
+    catch(const std::exception& e)
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,string("api recv err:") + e.what());
+        return NULL;
+    }
+    return &g_friendInfo[0];
+}
+
+extern "C" SBOT_EXPORT_API SBOT_GROUPINFOLIST_TYPE * SBot_GetGroupList()
+{
+    Json::Value send_json;
+    send_json["action"] = "get_group_list";
+    g_send_msg = Json::arrayValue;
+    string self_id;
+    if(g_event_json["self_id"].isString())
+    {
+        self_id = g_event_json["self_id"].asString();
+    }
+    else
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
+        return NULL;
+    }
+    
+    const char * ret_str =  \
+        _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
+    if(!ret_str)
+    {
+        return NULL;
+    }
+    Json::Reader reader;
+    Json::Value ret_json;
+	if(!reader.parse(ret_str, ret_json))
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
+        return NULL;
+    }
+    if( !ret_json.isObject() || 
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
+    )
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
+        return NULL;
+    }
+    //printf("recv:%s\n",ret_json.toStyledString().c_str());
+    try
+    {
+        Json::Value & json_vec = ret_json["data"];
+        g_groupInfo_t.clear();
+        g_groupInfo.clear();
+        for(const auto & it:json_vec)
+        {
+            GroupInfo_t info;
+            info.group_id = it["group_id"].asString();
+            info.group_name = it["group_name"].asString();
+            g_groupInfo_t.push_back(info);
+        }
+        if(g_groupInfo_t.size() == 0)
+        {
+            //you are no group
+            return NULL;
+        }
+        for(size_t i = 0; i < g_groupInfo_t.size();++i)
+        {
+            SBOT_GROUPINFOLIST_TYPE sbot_group_info;
+            sbot_group_info.group_id =  g_groupInfo_t[i].group_id.c_str();
+            sbot_group_info.group_name =  g_groupInfo_t[i].group_name.c_str();
+            sbot_group_info.next = NULL;
+            g_groupInfo.push_back(sbot_group_info);
+        }
+        for(size_t i = 0; i < g_groupInfo.size();++i)
+        {
+            if(i != g_groupInfo.size() - 1)
+            {
+                g_groupInfo[i].next = &g_groupInfo[i+1];
+            }
+        }
+    }
+    catch(const std::exception& e)
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,string("api recv err:") + e.what());
+        return NULL;
+    }
+    return &g_groupInfo[0];
 }

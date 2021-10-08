@@ -29,9 +29,35 @@ int main()
 		}
 		if(strcmp(SBot_GetEvtValue("message_type"),"group") == 0)
 		{
+			printf("nickname:%s\n",SBot_ToAnsi(SBot_GetEvtValue("nickname")));
+			SBOT_LOGININFO_TYPE * info = SBot_GetLoginInfo();
+			if(info)
+			{
+				printf("info:\n\tuser_id:%s\n\tnickname:%s\n",info->user_id,SBot_ToAnsi(info->nickname));
+			}
+			else
+			{
+				printf("get login info err:%s\n",SBot_GetErrStr());
+			}
+			printf("-----------------------------\n");
+			SBOT_GROUPINFOLIST_TYPE * group_list = SBot_GetGroupList();
+			if(SBot_GetErrCode() == SBOT_OK)
+			{
+				while(group_list)
+				{
+					printf("info:\n\tgroup_id:%s\n\tgroup_name:%s\n",group_list->group_id,SBot_ToAnsi(group_list->group_name));
+					group_list = group_list->next;
+				}
+			}
+			else
+			{
+				printf("get group list err:%s\n",SBot_GetErrStr());
+			}
+			
 			if(strcmp(SBot_GetMsgType(0),"at") == 0)
 			{
 				printf("at:%s\n",SBot_GetAtMsg(0));
+				SBot_DelMsg();
 			}
 		}
 		if( strcmp(SBot_GetEvtValue("message_type"),"group") == 0 &&
