@@ -1,4 +1,4 @@
 *.c     linguist language=c
-*.h     text language=c
-*.cpp   text language=c
-*.hpp   text language=c
+*.h     linguist language=c
+*.cpp   linguist language=c
+*.hpp   linguist language=c
