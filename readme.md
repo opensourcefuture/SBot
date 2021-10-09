@@ -4,20 +4,20 @@
 
 ## 目的
 
-* 提供一个对接`OneBot`的跨平台C语言SDK
+* 提供一个对接 OneBot 的跨平台C语言SDK
 * 这是一个以简单为主的框架，可能不会十分高效
 
 ## 编译 & 安装
 
 ### 编译环境
 
-* `CMake 3.15`及以上
-* 支持`c++17`的`gcc`或`clang`（`windows` 下可以是`mingw`）
-* `git`以及网络支持（所有依赖会自动从`github`拉取）
+* CMake 3.15 及以上
+* 支持 c++17 的 gcc 或 clang （windows 下可以是 mingw）
+* git以及网络支持（所有依赖会自动从github拉取）
 
 ### 编译
 
-在`build`（自己新建，github传不了空文件夹...）目录下：
+在 build（自己新建，github传不了空文件夹...）目录下：
 
 ```shell
 cmake ..
@@ -46,16 +46,16 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SBot)
 
 int main()
 {
-        const char * json_cfg = "\
+	const char * json_cfg = "\
 	{\
-            \"adapter\":\"ws_onebot11\",\
-            \"ws_url\":\"ws://localhost:6700\",\
-            \"access_token\":\"super1207\"\
-        }";
+		\"adapter\":\"ws_onebot11\",\
+		\"ws_url\":\"ws://localhost:6700\",\
+		\"access_token\":\"super1207\"\
+	}";
 	SBOT_HANDLE_TYPE handle = SBot_Connect(json_cfg);
 	if(handle == SBOT_HANDLE_NULL)
 	{
-                printf("connect false\n");
+		printf("connect false\n");
 		return 0;
 	}
 	printf("connect success\n");
@@ -70,8 +70,8 @@ int main()
 			continue;
 		}
 		if( strcmp(SBot_GetEvtValue("message_type"),"private") == 0 &&
-		    SBot_GetMsgSize() == 1 &&
-		    strcmp(SBot_GetMsgType(0),"text") == 0)
+			SBot_GetMsgSize() == 1 &&
+			strcmp(SBot_GetMsgType(0),"text") == 0)
 		{
 			const char * text_msg = SBot_GetTextMsg(0);
 			if(strcmp(text_msg,"ping") == 0)
@@ -91,7 +91,7 @@ int main()
 	}
 	SBot_DelHandle(handle);
 	printf("connect lost\n");
-        return 0;
+	return 0;
 }
 
 ```
@@ -935,7 +935,7 @@ int main()
 * [x] ws正向连接 
 * [ ] ws反向连接 (低优先级)
 * [x] 对接OneBotv11 
-* [ ] 对接OneBotv12  (等待第一个OneBot实现出现)
+* [ ] 对接OneBotv12  (等待第一个OneBotv12实现出现)
 
 #### 消息相关
 * [x] 收发文本消息
