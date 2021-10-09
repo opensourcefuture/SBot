@@ -80,44 +80,22 @@ static void Del_Con_By_Handle(SBOT_HANDLE_TYPE handle)
     }
 }
 
-// static void Deal_Str_In_SendJson(Json::Value & send_json)
-// {
-//     const char * cvt_str_vec[] = {"user_id","group_id","target_id","self_id","message_id"};
-//     for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
-//     {
-//         if(send_json["params"][cvt_str_vec[i]].isString())
-//         {
-//             assert(sizeof(long long int) == 8);
-//             send_json["params"][cvt_str_vec[i]] = \
-//                 stoll(send_json["params"][cvt_str_vec[i]].asString());
-//         }
-//     }
-// }
-
-// static void Deal_Str_In_RecvJson(Json::Value & send_json)
-// {
-//     const char * cvt_str_vec[] = {"user_id","group_id","target_id","self_id","message_id"};
-//     for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
-//     {
-//         if(send_json[cvt_str_vec[i]].isInt64())
-//         {
-//             send_json[cvt_str_vec[i]] = \
-//                 to_string(send_json[cvt_str_vec[i]].asInt64());
-//         }
-//     }
-//     if(send_json["data"].isObject())
-//     {
-//         for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
-//         {
-//             if(send_json["data"][cvt_str_vec[i]].isString())
-//             {
-//                 assert(sizeof(long long int) == 8);
-//                 send_json["data"][cvt_str_vec[i]] = \
-//                     stoll(send_json["data"][cvt_str_vec[i]].asString());
-//             }
-//         }
-//     }
-// }
+static void Deal_Str_In_SendJson(Json::Value & send_json)
+{
+    const char * cvt_str_vec[] = {"user_id","group_id","target_id","self_id","message_id"};
+    for(int i = 0;i < sizeof(cvt_str_vec)/sizeof(char *); ++i)
+    {
+        if(send_json["params"][cvt_str_vec[i]].isString())
+        {
+            if(!(sizeof(long long int) == 8))
+            {
+                throw std::runtime_error("the size of long long int not 8，don't support this platform");
+            }
+            send_json["params"][cvt_str_vec[i]] = \
+                stoll(send_json["params"][cvt_str_vec[i]].asString());
+        }
+    }
+}
 
 static void Cvt_Json_Int_To_Str(Json::Value & send_json)
 {
@@ -423,7 +401,7 @@ const char * Ws_SendApi(std::shared_ptr<SBot_Struct> bot_handle_shared_ptr,const
 
     try
     {
-        Cvt_Json_Int_To_Str(send_json);
+        Deal_Str_In_SendJson(send_json);
     }
     catch(const std::exception & e)
     {
