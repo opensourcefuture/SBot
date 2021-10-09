@@ -1,0 +1,4 @@
+*.c     text diff=c
+*.h     text diff=c
+*.cpp   text diff=c
+*.hpp   text diff=c
