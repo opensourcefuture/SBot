@@ -101,7 +101,8 @@ int main()
 1. 返回指针的函数，不需要用户手动调用去分配函数。
 2. 返回`const char *`的函数，保证返回C语言字符串（以`'\0'`结尾且其它位置不含`'\0'`），不会返回空指针。
 3. 返回的指针指向的资源，在下一次在同一线程中调用同名函数时自动释放。
-4. 以上约定对于使用下划线`_`做函数名开头的函数无效，这种函数不建议做测试之外的用途，并且以后会移除。
+4. 若无特殊说明，涉及的字符串均为 utf8 编码。
+5. 以上约定对于使用下划线`_`做函数名开头的函数无效，这种函数不建议做测试之外的用途，并且以后会移除。
 
 ## 错误码与错误字符串
 
@@ -164,7 +165,7 @@ int main()
 	用于释放连接句柄。
 
 #### 参数：
-	handle
+	handle：
 		连接句柄。
 
 #### 返回值：
@@ -345,10 +346,10 @@ int main()
 
 #### 参数：
 	handle：
-		线程变量 handle
+		线程变量 handle。
 
 #### 返回值：
-	返回 handle
+	返回 handle。
 
 #### 线程变量设置：
 	无。
@@ -358,6 +359,568 @@ int main()
 
 #### 其它说明：
 	此函数需要通过错误码来判断是否执行成功。
+	
+```
+</details>
+
+### 向消息链添加文字节点：SBot_UpTextMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_UpTextMsg(const char * text_msg)
+
+#### 函数功能：
+	向消息链缓存添加文字节点，此函数不会真正将消息发出去。
+
+#### 参数：
+	text_msg：
+		要添加的文字，使用 utf8 编码。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	消息链缓存
+
+#### 线程变量依赖：
+	消息链缓存
+
+#### 其它说明：
+	之后使用 SBot_SendPrivateMsg 或 SBot_SendGroupMsg 可以将消息链发出去。
+	
+```
+</details>
+
+### 向消息链添加At节点：SBot_UpAtMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id)
+
+#### 函数功能：
+	向消息链缓存添加At节点，此函数不会真正将消息发出去。
+
+#### 参数：
+	target_id：
+		要 At 的人的id。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	消息链缓存
+
+#### 线程变量依赖：
+	消息链缓存
+
+#### 其它说明：
+	之后使用 SBot_SendPrivateMsg 或 SBot_SendGroupMsg 可以将消息链发出去。
+	
+```
+</details>
+
+### 向消息链添加图片节点：SBot_UpImgMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id)
+
+#### 函数功能：
+	向消息链缓存添加图片节点，此函数不会真正将消息发出去。
+
+#### 参数：
+	file_id：
+		图片的文件id。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	消息链缓存
+
+#### 线程变量依赖：
+	消息链缓存
+
+#### 其它说明：
+	之后使用 SBot_SendPrivateMsg 或 SBot_SendGroupMsg 可以将消息链发出去。图片的文件id可以通过 SBot_MakeImgFileIdByPath、SBot_MakeImgFileIdByUrl 获取。
+	
+```
+</details>
+
+### 从本地图片得到文件id：SBot_MakeImgFileIdByPath
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_MakeImgFileIdByPath(const char * path_str)
+
+#### 函数功能：
+	从本地图片得到文件id。
+
+#### 参数：
+	path_str：
+		图片位置，绝对路径、相对路径均可，使用 utf8 编码。
+
+#### 返回值：
+	成功返回文件id，失败返回 ""。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id
+
+#### 其它说明：
+	目前实现中，不会依赖 handle、self_id，但不排除将来依赖的可能性。
+	
+```
+</details>
+
+### 从网络位置得到文件id：SBot_MakeImgFileIdByUrl
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_MakeImgFileIdByUrl(const char * url_str)
+
+#### 函数功能：
+	从网络位置得到文件id。支持 http、https 开头的路径。
+
+#### 参数：
+	path_str：
+		网络位置，使用 utf8 编码。
+
+#### 返回值：
+	成功返回文件id，失败返回 ""。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id
+
+#### 其它说明：
+	目前实现中，不会依赖 handle、self_id，但不排除将来依赖的可能性。
+	
+```
+</details>
+
+### 发送私聊消息：SBot_SendPrivateMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_SendPrivateMsg()
+
+#### 函数功能：
+	将消息链缓存通过私聊消息的形式发送出去，并清空消息链缓存。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功返回 message_id，失败返回 ""。
+
+#### 线程变量设置：
+	消息链缓存
+
+#### 线程变量依赖：
+	消息链缓存、handle、self_id、user_id
+
+#### 其它说明：
+	无论成功与否，都会清空消息链缓存。
+	
+```
+</details>
+
+### 发送群聊消息：SBot_SendGroupMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_SendGroupMsg()
+
+#### 函数功能：
+	将消息链缓存通过群聊消息的形式发送出去，并清空消息链缓存。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功返回 message_id，失败返回 ""。
+
+#### 线程变量设置：
+	消息链缓存
+
+#### 线程变量依赖：
+	消息链缓存、handle、self_id、user_id、group_id
+
+#### 其它说明：
+	无论成功与否，都会清空消息链缓存。
+	
+```
+</details>
+
+### 撤回消息：SBot_DelMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_DelMsg()
+
+#### 函数功能：
+	撤回消息。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id、message_id
+
+#### 其它说明：
+	无。
+	
+```
+</details>
+
+### 获取登录号信息：SBot_GetLoginInfo
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_LOGININFO_TYPE * SBot_GetLoginInfo()
+
+#### 函数功能：
+	获取登录号信息，包含id和昵称。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功返回非空 SBOT_LOGININFO_TYPE 指针，失败返回空指针。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id
+
+#### 其它说明：
+	无。
+	
+```
+</details>
+
+### 获取好友列表：SBot_GetFriendList
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_FRIENDINFOLIST_TYPE * SBot_GetFriendList()
+
+#### 函数功能：
+	获取好友列表，包含id和昵称。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功且至少有一个好友返回非空 SBOT_FRIENDINFOLIST_TYPE 指针，失败或没有好友返回空指针。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。SBOT_FRIENDINFOLIST_TYPE 结构体中，next指针指向下一个元素。
+	
+```
+</details>
+
+### 获取群列表：SBot_GetGroupList
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_GROUPINFOLIST_TYPE * SBot_GetGroupList()
+
+#### 函数功能：
+	获取群列表，包含id和群名字。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功且至少有一个群返回非空 SBOT_GROUPINFOLIST_TYPE 指针，失败或没有群返回空指针。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。SBOT_GROUPINFOLIST_TYPE 结构体中，next指针指向下一个元素。
+	
+```
+</details>
+
+### 获得message长度：SBot_GetMsgSize
+
+<details>
+
+```markdown
+#### 函数原型：
+	unsigned int SBot_GetMsgSize()
+
+#### 函数功能：
+	获得 message 长度，一般在调用 SBot_GetEvent 函数后使用。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	返回 message 长度。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	message
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。
+	
+```
+</details>
+
+### 查看message中的节点类型：SBot_GetMsgType
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetMsgType(unsigned int pos)
+
+#### 函数功能：
+	查看message中的节点类型，目前支持 "text"、"at"
+
+#### 参数：
+	要获得的节点在 message 中的位置，从 0 开始。
+
+#### 返回值：
+	成功返回节点类型，失败返回""，若节点类型未知，返回 "unknow"。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	message
+
+#### 其它说明：
+	返回 "unknow" 不算失败。
+	
+```
+</details>
+
+### 获得text节点数据：SBot_GetTextMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetTextMsg(unsigned int pos)
+
+#### 函数功能：
+	从 message 中获得 text 节点的文字。
+
+#### 参数：
+	要获得的节点在 message 中的位置，从 0 开始。
+
+#### 返回值：
+	返回 text 节点的文字。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	message
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。
+	
+```
+</details>
+
+### 获得at节点数据：SBot_GetAtMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetAtMsg(unsigned int pos)
+
+#### 函数功能：
+	从 message 中获得 at 节点中被at的人的id。
+
+#### 参数：
+	要获得的节点在 message 中的位置，从 0 开始。
+
+#### 返回值：
+	成功返回被at的人的 id ，失败返回""。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	message
+
+#### 其它说明：
+	无。
+	
+```
+</details>
+
+### 获得错误描述字符串：SBot_GetErrStr
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetErrStr()
+
+#### 函数功能：
+	获得其它函数执行失败后的错误描述字符串。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	错误描述字符串，若没有错误，则返回""。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	此函数本身不会失败，也不会修改错误码、错误描述字符串。
+	
+```
+</details>
+
+### 获得错误码：SBot_GetErrCode
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_ERR_CODE SBot_GetErrCode()
+
+#### 函数功能：
+	获得其它函数执行后的错误码。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	SBOT_ERR_CODE 类型的错误码
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	此函数本身不会失败，也不会修改错误码、错误描述字符串。此函数可以用来判断其它函数是否执行成功。
+	
+```
+</details>
+
+### 将字符串转化为本地编码：SBot_ToAnsi
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_ToAnsi(const char * utf8_str)
+
+#### 函数功能：
+	将 utf8 字符串转换为本地编码。
+
+#### 参数：
+	utf8_str：
+		utf8 编码的字符串
+
+#### 返回值：
+	按本机编码的字符串。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。
+	若返回非""，则一定成功，此函数会跳过无法转换的字符，不视为错误。
+	此函数只在windows下做实际转换，在其它操作系统下会直接返回参数中字符串的拷贝，而不做转换，且不视作错误。
+	
+```
+</details>
+
+### 将字符串转化为utf8编码：SBot_ToUtf8
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_ToUtf8(const char * ansi_str);
+
+#### 函数功能：
+	将本机编码的字符串转换为utf8编码。
+
+#### 参数：
+	ansi_str：
+		本机编码的字符串
+
+#### 返回值：
+	按utf8编码的字符串。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	无。
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。
+	若返回非""，则一定成功，此函数会跳过无法转换的字符，不视为错误。
+	此函数只在windows下做实际转换，在其它操作系统下会直接返回参数中字符串的拷贝，而不做转换，且不视作错误。
 	
 ```
 </details>
