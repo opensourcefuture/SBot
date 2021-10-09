@@ -561,7 +561,7 @@ int main()
 	消息链缓存
 
 #### 线程变量依赖：
-	消息链缓存、handle、self_id、user_id、group_id
+	消息链缓存、handle、self_id、group_id
 
 #### 其它说明：
 	无论成功与否，都会清空消息链缓存。
