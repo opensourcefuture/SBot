@@ -67,7 +67,10 @@ extern "C" SBOT_EXPORT_API SBOT_HANDLE_TYPE SBot_Connect(const char * cfg_json_s
     {
         return g_handle;
     }
+    SBOT_ERR_CODE errcode = SBot_GetErrCode();
+    string errstr = SBot_GetErrStr();
     _SBot_DelHandle(g_handle);
+    _SBot_SetErr(errcode,errstr);
     return SBOT_HANDLE_NULL;
 }
 
