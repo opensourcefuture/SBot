@@ -91,8 +91,8 @@ static void Deal_Str_In_SendJson(Json::Value & send_json)
             {
                 throw std::runtime_error("the size of long long int not 8，don't support this platform");
             }
-            send_json["params"][cvt_str_vec[i]] = \
-                stoll(send_json["params"][cvt_str_vec[i]].asString());
+            Json::Int64 tempint64 = stoll(send_json["params"][cvt_str_vec[i]].asString());
+            send_json["params"][cvt_str_vec[i]] = tempint64;
         }
     }
 }
