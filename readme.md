@@ -397,14 +397,13 @@ int main()
 
 ```markdown
 #### 函数原型：
-	SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id)
+	SBOT_BOOL_TYPE SBot_UpAtMsg()
 
 #### 函数功能：
 	向消息链缓存添加At节点，此函数不会真正将消息发出去。
 
 #### 参数：
-	target_id：
-		要 At 的人的id。
+	无。
 
 #### 返回值：
 	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
@@ -413,7 +412,36 @@ int main()
 	消息链缓存
 
 #### 线程变量依赖：
+	消息链缓存、user_id
+
+#### 其它说明：
+	之后使用 SBot_SendPrivateMsg 或 SBot_SendGroupMsg 可以将消息链发出去。
+	
+```
+</details>
+
+### 向消息链添加Reply节点：SBot_UpReplyMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_UpReplyMsg()
+
+#### 函数功能：
+	向消息链缓存添加Reply节点，此函数不会真正将消息发出去。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
 	消息链缓存
+
+#### 线程变量依赖：
+	消息链缓存、message_id
 
 #### 其它说明：
 	之后使用 SBot_SendPrivateMsg 或 SBot_SendGroupMsg 可以将消息链发出去。
@@ -723,7 +751,7 @@ int main()
 	const char * SBot_GetMsgType(unsigned int pos)
 
 #### 函数功能：
-	查看message中的节点类型，目前支持 "text"、"at"
+	查看message中的节点类型，目前支持 "text"、"at"、"reply"
 
 #### 参数：
 	要获得的节点在 message 中的位置，从 0 开始。
@@ -788,6 +816,35 @@ int main()
 
 #### 返回值：
 	成功返回被at的人的 id ，失败返回""。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	message
+
+#### 其它说明：
+	无。
+	
+```
+</details>
+
+### 获得reply节点数据：SBot_GetReplyMsg
+
+<details>
+
+```markdown
+#### 函数原型：
+	const char * SBot_GetReplyMsg(unsigned int pos)
+
+#### 函数功能：
+	从 message 中获得 reply 节点中获取message_id。
+
+#### 参数：
+	要获得的节点在 message 中的位置，从 0 开始。
+
+#### 返回值：
+	成功返回 message_id ，失败返回""。
 
 #### 线程变量设置：
 	无。
@@ -943,7 +1000,7 @@ int main()
 * [x] 发送Image消息
 * [x] 撤回消息
 * [ ] 接收Image消息  (暂无思路)
-* [ ] 收发Reply消息  (高优先级)
+* [x] 收发Reply消息 
 * [ ] 收发语音消息  (暂无思路)
 * [ ] 收发文件消息  (暂无思路)
 

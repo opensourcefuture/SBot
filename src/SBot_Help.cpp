@@ -112,16 +112,37 @@ extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpTextMsg(const char * text_msg)
     return SBOT_TRUE;
 }
 
-extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id)
+extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpAtMsg()
 {
-    if(!target_id)
+    Json::Value send_json;
+     try
     {
-        _SBot_SetErr(SBOT_CLIENT_ERR,"target_id is null");
+        send_json["type"] = "at";
+        send_json["data"]["qq"] = g_event_json["user_id"].asString();
+    }
+    catch(const std::exception &)
+    {
+        _SBot_SetErr(SBOT_CLIENT_ERR,"not found user_id");
         return SBOT_FALSE;
     }
+    g_send_msg.append(send_json);
+    _SBot_SetErr(SBOT_OK,"");
+    return SBOT_TRUE;
+}
+
+extern "C" SBOT_EXPORT_API SBOT_BOOL_TYPE SBot_UpReplyMsg()
+{
     Json::Value send_json;
-    send_json["type"] = "at";
-    send_json["data"]["qq"] = target_id;
+    try
+    {
+        send_json["type"] = "reply";
+        send_json["data"]["id"] = g_event_json["message_id"].asString();
+    }
+    catch(const std::exception &)
+    {
+        _SBot_SetErr(SBOT_CLIENT_ERR,"not found message_id");
+        return SBOT_FALSE;
+    }
     g_send_msg.append(send_json);
     _SBot_SetErr(SBOT_OK,"");
     return SBOT_TRUE;
@@ -332,6 +353,10 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetMsgType(unsigned int pos)
         {
             return g_get_msg_type.c_str();
         }
+        else if(g_get_msg_type == "reply")
+        {
+            return g_get_msg_type.c_str();
+        }
         return "unknow";
     }
     catch(const std::exception & e)
@@ -362,6 +387,21 @@ extern "C" SBOT_EXPORT_API const char * SBot_GetAtMsg(unsigned int pos)
     try
     {
         g_get_at_msg = g_event_json["message"][pos]["data"]["qq"].asString();
+       return g_get_at_msg.c_str();
+    }
+    catch(const std::exception & e)
+    {
+        _SBot_SetErr(SBOT_UNKNOW_ERR,e.what());
+         return "";
+    }
+    _SBot_SetErr(SBOT_OK,"");
+}
+
+extern "C" SBOT_EXPORT_API const char * SBot_GetReplyMsg(unsigned int pos)
+{
+    try
+    {
+        g_get_at_msg = g_event_json["message"][pos]["data"]["id"].asString();
        return g_get_at_msg.c_str();
     }
     catch(const std::exception & e)

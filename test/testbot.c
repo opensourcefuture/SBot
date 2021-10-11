@@ -74,7 +74,8 @@ int main()
 					printf("upload file err:%s\n",SBot_GetErrStr());
 					continue;
 				}
-				SBot_UpAtMsg(SBot_GetEvtValue("user_id"));
+				//SBot_UpReplyMsg();
+				SBot_UpAtMsg();
 				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("pong");
 				if(strcmp(SBot_SendGroupMsg(),"") == 0)
@@ -91,7 +92,8 @@ int main()
 					printf("upload file err:%s\n",SBot_GetErrStr());
 					continue;
 				}
-				SBot_UpAtMsg(SBot_GetEvtValue("user_id"));
+				SBot_UpReplyMsg();
+				//SBot_UpAtMsg();
 				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("ping");
 				SBot_SendGroupMsg();

@@ -46,7 +46,8 @@ extern "C"
     const char * SBot_MakeImgFileIdByPath(const char * path_str);
     const char * SBot_MakeImgFileIdByUrl(const char * url_str);
     SBOT_BOOL_TYPE SBot_UpImgMsg(const char * file_id);
-    SBOT_BOOL_TYPE SBot_UpAtMsg(const char * target_id);
+    SBOT_BOOL_TYPE SBot_UpAtMsg();
+    SBOT_BOOL_TYPE SBot_UpReplyMsg();
     const char * SBot_SendPrivateMsg();
     const char * SBot_SendGroupMsg();
 
@@ -75,6 +76,7 @@ extern "C"
     const char * SBot_GetMsgType(unsigned int pos);
     const char * SBot_GetTextMsg(unsigned int pos);
     const char * SBot_GetAtMsg(unsigned int pos);
+    const char * SBot_GetReplyMsg(unsigned int pos);
 
     /* 内部使用的函数 */
     SBOT_HANDLE_TYPE _SBot_GetHandle(const char *cfg_json_str);
