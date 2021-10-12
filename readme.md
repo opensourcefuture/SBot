@@ -34,6 +34,20 @@ find_package(SBot)
 target_link_libraries(${PROJECT_NAME} PRIVATE SBot)
 ```
 
+在 windows 下，因系统限制，无法设置 rpath，所以，可能需要将 libSBot.dll 复制到工程的可执行文件目录下。
+
+在 CMakeLists.txt 中加入以下内容可自动复制：
+
+```cmake
+if(WIN32)
+    add_custom_target(SBotBinaries
+        COMMAND ${CMAKE_COMMAND} -E copy ${SBot_DIR}/../../../bin/libSBot.dll    ${CMAKE_BINARY_DIR}
+        COMMENT "Copying SBot binaries from ${SBot_DIR}/../../../bin/' to '${CMAKE_BINARY_DIR}'" VERBATIM
+    )
+    add_dependencies(${PROJECT_NAME} SBotBinaries)
+endif()
+```
+
 ### 使用示例
 
 一个 ping/pong 插件：私聊收到`ping`，回复`pong`；收到`pong`，回复`ping`。
