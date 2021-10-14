@@ -611,6 +611,36 @@ int main()
 ```
 </details>
 
+### 禁言群成员：SBot_GroupBan
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_BOOL_TYPE SBot_GroupBan(unsigned int sec)
+
+#### 函数功能：
+	禁言群成员
+
+#### 参数：
+	sec：
+		禁言时间，单位为秒，0 代表解除禁言。
+
+#### 返回值：
+	成功返回 SBOT_TRUE，失败返回 SBOT_FALSE。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id、group_id、user_id
+
+#### 其它说明：
+	无。
+	
+```
+</details>
+
 ### 撤回消息：SBot_DelMsg
 
 <details>
@@ -723,6 +753,35 @@ int main()
 
 #### 其它说明：
 	此函数需要通过错误码来判断成功与否。SBOT_GROUPINFOLIST_TYPE 结构体中，next指针指向下一个元素。
+	
+```
+</details>
+
+### 获取群成员列表：SBot_GetGroupMemberList
+
+<details>
+
+```markdown
+#### 函数原型：
+	SBOT_GROUPMEMBERINFOLIST_TYPE * 获取群成员列表：SBot_GetGroupMemberList()
+
+#### 函数功能：
+	获取群成员列表，包含成员id和成员名字。
+
+#### 参数：
+	无。
+
+#### 返回值：
+	成功且至少有一个成员返回非空 SBOT_GROUPMEMBERINFOLIST_TYPE 指针，失败或没有成员返回空指针。
+
+#### 线程变量设置：
+	无。
+
+#### 线程变量依赖：
+	handle、self_id、group_id
+
+#### 其它说明：
+	此函数需要通过错误码来判断成功与否。SBOT_GROUPMEMBERINFOLIST_TYPE 结构体中，next指针指向下一个元素。
 	
 ```
 </details>
@@ -1003,9 +1062,9 @@ int main()
 下面列出已经实现和计划实现的特性：
 
 #### 连接相关
-* [x] ws正向连接 
+* [x] ws正向连接
 * [ ] ws反向连接 (低优先级)
-* [x] 对接OneBotv11 
+* [x] 对接OneBotv11
 * [ ] 对接OneBotv12  (等待第一个OneBotv12实现出现)
 
 #### 消息相关
@@ -1014,7 +1073,7 @@ int main()
 * [x] 发送Image消息
 * [x] 撤回消息
 * [ ] 接收Image消息  (暂无思路)
-* [x] 收发Reply消息 
+* [x] 收发Reply消息
 * [ ] 收发语音消息  (暂无思路)
 * [ ] 收发文件消息  (暂无思路)
 
@@ -1022,8 +1081,8 @@ int main()
 * [x] 获取登录号信息
 * [x] 获取好友列表
 * [x] 获取群列表
-* [ ] 获取群成员列表  (高优先级)
-* [ ] 禁言群成员  (高优先级)
+* [x] 获取群成员列表
+* [x] 禁言群成员
 
 #### 平台相关
 * [x] gcc (win、linux、android)

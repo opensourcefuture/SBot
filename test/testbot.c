@@ -82,6 +82,7 @@ int main()
 				{
 					printf("SBot_SendGroupMsg err:%s\n",SBot_GetErrStr());
 				}
+				SBot_GroupBan(120);
 			}
 			else if(strcmp(text_msg,"pong") == 0)
 			{
@@ -97,6 +98,7 @@ int main()
 				SBot_UpImgMsg(file_id);
 				SBot_UpTextMsg("ping");
 				SBot_SendGroupMsg();
+				SBot_GroupBan(0);
 			}
 
 		}

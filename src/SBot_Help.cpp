@@ -53,6 +53,15 @@ struct GroupInfo_t
 thread_local std::vector<SBOT_GROUPINFOLIST_TYPE> g_groupInfo;
 thread_local std::vector<GroupInfo_t> g_groupInfo_t;
 
+//GetGroupList
+struct GroupMemberInfo_t
+{
+    std::string member_id;
+    std::string member_name;
+};
+thread_local std::vector<SBOT_GROUPMEMBERINFOLIST_TYPE> g_groupMemberInfo;
+thread_local std::vector<GroupMemberInfo_t> g_groupMemberInfo_t;
+
 using namespace std;
 
 extern "C" SBOT_EXPORT_API SBOT_HANDLE_TYPE SBot_Connect(const char * cfg_json_str)
@@ -249,6 +258,47 @@ extern "C" SBOT_EXPORT_API const char * SBot_SendGroupMsg()
     }
 }
 
+extern "C" SBOT_EXPORT_API  SBOT_BOOL_TYPE SBot_GroupBan(unsigned int sec)
+{
+    Json::Value send_json;
+    send_json["action"] = "set_group_ban";
+    send_json["params"]["group_id"] = g_event_json["group_id"];
+    send_json["params"]["user_id"] = g_event_json["user_id"];
+    send_json["params"]["duration"] = sec;
+    string self_id;
+    if(g_event_json["self_id"].isString())
+    {
+        self_id = g_event_json["self_id"].asString();
+    }
+    else
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
+        return SBOT_FALSE;
+    }
+    const char * ret_str =  \
+        _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
+    if(!ret_str)
+    {
+        return SBOT_FALSE;
+    }
+    Json::Reader reader;
+    Json::Value ret_json;
+	if(!reader.parse(ret_str, ret_json))
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
+        return SBOT_FALSE;
+    }
+    if( !ret_json.isObject() || 
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
+    )
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
+        return SBOT_FALSE;
+    }
+    return SBOT_TRUE;
+    
+}
 
 extern "C" SBOT_EXPORT_API const char * SBot_GetEvtValue(const char * key)
 {
@@ -776,4 +826,84 @@ extern "C" SBOT_EXPORT_API SBOT_GROUPINFOLIST_TYPE * SBot_GetGroupList()
         return NULL;
     }
     return &g_groupInfo[0];
+}
+
+extern "C" SBOT_EXPORT_API SBOT_GROUPMEMBERINFOLIST_TYPE * SBot_GetGroupMemberList()
+{
+    Json::Value send_json;
+    send_json["action"] = "get_group_member_list";
+    send_json["params"]["group_id"] = g_event_json["group_id"];
+    g_send_msg = Json::arrayValue;
+    string self_id;
+    if(g_event_json["self_id"].isString())
+    {
+        self_id = g_event_json["self_id"].asString();
+    }
+    else
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"self_id not found");
+        return NULL;
+    }
+    
+    const char * ret_str =  \
+        _SBot_SendApi(g_handle,self_id.c_str(),Json::FastWriter().write(send_json).c_str());
+    if(!ret_str)
+    {
+        return NULL;
+    }
+    Json::Reader reader;
+    Json::Value ret_json;
+	if(!reader.parse(ret_str, ret_json))
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"parse recv json err");
+        return NULL;
+    }
+    if( !ret_json.isObject() || 
+        !ret_json["retcode"].isString() || 
+        (ret_json["retcode"].asString() != "0")
+    )
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,"retcode in recv json not 0");
+        return NULL;
+    }
+    //printf("recv:%s\n",ret_json.toStyledString().c_str());
+    try
+    {
+        Json::Value & json_vec = ret_json["data"];
+        g_groupMemberInfo_t.clear();
+        g_groupMemberInfo.clear();
+        for(const auto & it:json_vec)
+        {
+            GroupMemberInfo_t info;
+            info.member_id = it["user_id"].asString();
+            info.member_name = it["nickname"].asString();
+            g_groupMemberInfo_t.push_back(info);
+        }
+        if(g_groupMemberInfo_t.size() == 0)
+        {
+            //you are no group
+            return NULL;
+        }
+        for(size_t i = 0; i < g_groupMemberInfo_t.size();++i)
+        {
+            SBOT_GROUPMEMBERINFOLIST_TYPE sbot_group_member_info;
+            sbot_group_member_info.member_id =  g_groupMemberInfo_t[i].member_id.c_str();
+            sbot_group_member_info.member_name =  g_groupMemberInfo_t[i].member_name.c_str();
+            sbot_group_member_info.next = NULL;
+            g_groupMemberInfo.push_back(sbot_group_member_info);
+        }
+        for(size_t i = 0; i < g_groupMemberInfo.size();++i)
+        {
+            if(i != g_groupMemberInfo.size() - 1)
+            {
+                g_groupMemberInfo[i].next = &g_groupMemberInfo[i+1];
+            }
+        }
+    }
+    catch(const std::exception& e)
+    {
+        _SBot_SetErr(SBOT_SERVER_ERR,string("api recv err:") + e.what());
+        return NULL;
+    }
+    return &g_groupMemberInfo[0];
 }

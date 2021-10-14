@@ -37,6 +37,13 @@ extern "C"
         struct SBOT_GROUPINFOLIST_TYPE * next;
     }__attribute__((aligned(1))) SBOT_GROUPINFOLIST_TYPE;
 
+    typedef struct SBOT_GROUPMEMBERINFOLIST_TYPE
+    {
+        const char * member_id;
+        const char * member_name;
+        struct SBOT_GROUPMEMBERINFOLIST_TYPE * next;
+    }__attribute__((aligned(1))) SBOT_GROUPMEMBERINFOLIST_TYPE;
+
     SBOT_HANDLE_TYPE SBot_Connect(const char *cfg_json_str);
     void SBot_DelHandle(SBOT_HANDLE_TYPE handle);
     SBOT_BOOL_TYPE SBot_IsConnect();
@@ -50,10 +57,12 @@ extern "C"
     SBOT_BOOL_TYPE SBot_UpReplyMsg();
     const char * SBot_SendPrivateMsg();
     const char * SBot_SendGroupMsg();
+    SBOT_BOOL_TYPE SBot_GroupBan(unsigned int sec);
 
     SBOT_LOGININFO_TYPE * SBot_GetLoginInfo();
     SBOT_FRIENDINFOLIST_TYPE * SBot_GetFriendList();
     SBOT_GROUPINFOLIST_TYPE * SBot_GetGroupList();
+    SBOT_GROUPMEMBERINFOLIST_TYPE * SBot_GetGroupMemberList();
 
 
     SBOT_BOOL_TYPE SBot_DelMsg();
