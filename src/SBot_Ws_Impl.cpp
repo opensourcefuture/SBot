@@ -267,6 +267,10 @@ static SBOT_BOOL_TYPE _Ws_Connect(std::shared_ptr<SBot_Struct> bot_handle_shared
                 return ;
             }
             lock_guard<mutex> lk(sbot_struct_ptr->mx);
+            while(sbot_struct_ptr->event_list.size() > 1024)
+            {
+                sbot_struct_ptr->event_list.pop_front();
+            }
             sbot_struct_ptr->event_list.emplace_back(make_unique<Json::Value>(recv_json));
         }
         else if(recv_json.isObject() && recv_json["echo"].isString())
