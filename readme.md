@@ -351,14 +351,13 @@ int main()
 
 ```markdown
 #### 函数原型：
-	SBOT_BOOL_TYPE SBot_SetHandle()
+	SBOT_HANDLE_TYPE SBot_GetHandle();
 
 #### 函数功能：
 	获取线程变量 handle
 
 #### 参数：
-	handle：
-		线程变量 handle。
+	无。
 
 #### 返回值：
 	返回 handle。
