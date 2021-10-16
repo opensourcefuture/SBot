@@ -13,10 +13,10 @@ if(MSVC)
 endif()
 
 # 设置编译方式
-if(NOT ${PROJECT_NAME}_LIBRARY_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(${PROJECT_NAME}_LIBRARY_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-  set_property(CACHE ${PROJECT_NAME}_LIBRARY_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
+# if(NOT ${PROJECT_NAME}_LIBRARY_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+#   set(${PROJECT_NAME}_LIBRARY_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+#   set_property(CACHE ${PROJECT_NAME}_LIBRARY_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+# endif()
 
 # 指定工程类型(共享库)以及源文件
 add_library(${PROJECT_NAME} 

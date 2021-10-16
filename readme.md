@@ -20,7 +20,7 @@
 在 build（自己新建，github传不了空文件夹...）目录下：
 
 ```shell
-cmake ..
+cmake ..  或  cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 make install
 ```
