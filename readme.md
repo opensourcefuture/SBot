@@ -17,12 +17,15 @@
 
 ### 编译
 
-在 build（自己新建，github传不了空文件夹...）目录下：
-
 ```shell
-cmake ..  或  cmake .. -DCMAKE_BUILD_TYPE=Release
+git clone https://github.com/super1207/SBot
+mkdir SBot/build
+cd SBot/build
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 make install
+
+
 ```
 
 ## 使用
