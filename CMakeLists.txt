@@ -39,7 +39,7 @@ target_include_directories(${PROJECT_NAME}
 if(WIN32)
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,--exclude-all-symbols ")
 else()
-    add_definitions(-fPIC)
+    add_compile_options(-fPIC)
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -fvisibility=hidden ")
     target_link_libraries(${PROJECT_NAME} PRIVATE -pthread)
 endif()
